@@ -9,6 +9,10 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.SearchView;
 
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.ViewById;
+
 import java.util.List;
 
 import vn.brine.spotifymusicchannel.R;
@@ -18,17 +22,23 @@ import vn.brine.spotifymusicchannel.search.SearchPresenter;
 import vn.brine.spotifymusicchannel.search.SearchResultsAdapter;
 import vn.brine.spotifymusicchannel.spotifyapi.models.Track;
 
+@EActivity(R.layout.activity_main)
 public class MainActivity extends AppCompatActivity implements Search.View {
 
     static final String EXTRA_TOKEN = "EXTRA_TOKEN";
     private static final String KEY_CURRENT_QUERY = "CURRENT_QUERY";
+
+    @ViewById(R.id.search_view)
+    SearchView searchView;
+
+    @ViewById(R.id.search_results)
+    RecyclerView resultsList;
 
     private Search.ActionListener mActionListener;
 
     private LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
     private ScrollListener mScrollListener = new ScrollListener(mLayoutManager);
     private SearchResultsAdapter mAdapter;
-
 
     private class ScrollListener extends ResultListScrollListener {
 
@@ -42,15 +52,8 @@ public class MainActivity extends AppCompatActivity implements Search.View {
         }
     }
 
-    public static Intent createIntent(Context context) {
-        return new Intent(context, MainActivity.class);
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
+    @AfterViews
+    void Search(){
         Intent intent = getIntent();
         String token = intent.getStringExtra(EXTRA_TOKEN);
 
@@ -58,7 +61,6 @@ public class MainActivity extends AppCompatActivity implements Search.View {
         mActionListener.init(token);
 
         // Setup search field
-        final SearchView searchView = (SearchView) findViewById(R.id.search_view);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -73,7 +75,6 @@ public class MainActivity extends AppCompatActivity implements Search.View {
             }
         });
 
-
         // Setup search results list
         mAdapter = new SearchResultsAdapter(this, new SearchResultsAdapter.ItemSelectedListener() {
             @Override
@@ -82,11 +83,20 @@ public class MainActivity extends AppCompatActivity implements Search.View {
             }
         });
 
-        RecyclerView resultsList = (RecyclerView) findViewById(R.id.search_results);
         resultsList.setHasFixedSize(true);
         resultsList.setLayoutManager(mLayoutManager);
         resultsList.setAdapter(mAdapter);
         resultsList.addOnScrollListener(mScrollListener);
+
+    }
+
+    public static Intent createIntent(Context context) {
+        return new Intent(context, MainActivity_.class);
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
         // If Activity was recreated wit active search restore it
         if (savedInstanceState != null) {

@@ -21,11 +21,15 @@ android {
 
 repositories {
     mavenCentral()
+    mavenLocal()
     flatDir {
         dirs 'libs'
     }
 }
 
+apply plugin: 'com.android.application'
+apply plugin: 'android-apt'
+def AAVersion = 'XXX'
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
@@ -42,5 +46,22 @@ dependencies {
     compile 'com.google.guava:guava:18.0'
     compile 'com.google.code.gson:gson:2.6.2'
     compile 'com.squareup.retrofit:retrofit:1.8.0'
-    compile 'com.android.support:support-annotations:23.3.0'
+
+    apt "org.androidannotations:androidannotations:4.0.0"
+    compile "org.androidannotations:androidannotations-api:4.0.0"
 }
+
+apt {
+    arguments {
+        androidManifestFile variant.outputs[0]?.processResources?.manifestFile
+        // if you have multiple outputs (when using splits), you may want to have other index than 0
+
+        // you should set your package name here if you are using different application IDs
+        // resourcePackageName "your.package.name"
+
+        // You can set optional annotation processing options here, like these commented options:
+        // logLevel 'INFO'
+        // logFile '/var/log/aa.log'
+    }
+}
+
