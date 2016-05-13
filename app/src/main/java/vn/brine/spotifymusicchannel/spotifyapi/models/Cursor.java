@@ -1,0 +1,38 @@
+package vn.brine.spotifymusicchannel.spotifyapi.models;
+
+import android.os.Parcel;
+import android.os.Parcelable;
+
+/**
+ * Created by HaiLeader on 12-May-16.
+ */
+public class Cursor implements Parcelable {
+    public String after;
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(this.after);
+    }
+
+    public Cursor() {
+    }
+
+    protected Cursor(Parcel in) {
+        this.after = in.readString();
+    }
+
+    public static final Creator<Cursor> CREATOR = new Creator<Cursor>() {
+        public Cursor createFromParcel(Parcel source) {
+            return new Cursor(source);
+        }
+
+        public Cursor[] newArray(int size) {
+            return new Cursor[size];
+        }
+    };
+}
