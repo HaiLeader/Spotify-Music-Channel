@@ -33,35 +33,31 @@ def AAVersion = 'XXX'
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.3.0'
 
+    compile(name: 'material-search', ext: 'aar')
     // This library handles authentication and authorization
-    compile 'com.spotify.sdk:spotify-auth:1.0.0-beta12@aar'
 
     // This library handles music playback
-    compile 'com.spotify.sdk:spotify-player:1.0.0-beta12@aar'
 
-    compile 'com.android.support:recyclerview-v7:23.1.1'
+
+    apt "org.androidannotations:androidannotations:4.0.0"
+    compile 'com.android.support:appcompat-v7:23.3.0'
+    compile 'com.android.support:design:23.3.0'
+    compile 'com.spotify.sdk:spotify-auth:1.0.0-beta12@aar'
+    compile 'com.spotify.sdk:spotify-player:1.0.0-beta12@aar'
+    compile 'com.android.support:recyclerview-v7:23.3.0'
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.google.guava:guava:18.0'
     compile 'com.google.code.gson:gson:2.6.2'
     compile 'com.squareup.retrofit:retrofit:1.8.0'
-
-    apt "org.androidannotations:androidannotations:4.0.0"
-    compile "org.androidannotations:androidannotations-api:4.0.0"
+    compile 'org.androidannotations:androidannotations-api:4.0.0'
+    compile 'com.android.support:support-v4:23.3.0'
 }
 
 apt {
     arguments {
         androidManifestFile variant.outputs[0]?.processResources?.manifestFile
-        // if you have multiple outputs (when using splits), you may want to have other index than 0
 
-        // you should set your package name here if you are using different application IDs
-        // resourcePackageName "your.package.name"
-
-        // You can set optional annotation processing options here, like these commented options:
-        // logLevel 'INFO'
-        // logFile '/var/log/aa.log'
     }
 }
 

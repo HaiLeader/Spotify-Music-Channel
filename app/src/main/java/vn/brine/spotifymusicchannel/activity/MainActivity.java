@@ -2,71 +2,93 @@ package vn.brine.spotifymusicchannel.activity;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
+import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v4.view.ViewPager;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.SearchView;
+import android.widget.Toast;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.FragmentById;
+import org.androidannotations.annotations.FragmentByTag;
 import org.androidannotations.annotations.ViewById;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import vn.brine.spotifymusicchannel.R;
-import vn.brine.spotifymusicchannel.search.ResultListScrollListener;
-import vn.brine.spotifymusicchannel.search.Search;
-import vn.brine.spotifymusicchannel.search.SearchPresenter;
-import vn.brine.spotifymusicchannel.search.SearchResultsAdapter;
-import vn.brine.spotifymusicchannel.spotifyapi.models.Track;
+import vn.brine.spotifymusicchannel.fragment.FragmentDrawer;
+import vn.brine.spotifymusicchannel.fragment.SettingFragment;
+import vn.brine.spotifymusicchannel.fragment.TrackFragment_;
 
 @EActivity(R.layout.activity_main)
-public class MainActivity extends AppCompatActivity implements Search.View {
+public class MainActivity extends AppCompatActivity implements FragmentDrawer.FragmentDrawerListener {
 
-    static final String EXTRA_TOKEN = "EXTRA_TOKEN";
-    private static final String KEY_CURRENT_QUERY = "CURRENT_QUERY";
+    public static final String EXTRA_TOKEN = "EXTRA_TOKEN";
 
-    @ViewById(R.id.search_view)
-    SearchView searchView;
+    @ViewById(R.id.toolbar)
+    Toolbar mToolbar;
 
-    @ViewById(R.id.search_results)
-    RecyclerView resultsList;
+    @ViewById(R.id.viewpager)
+    ViewPager viewPager;
 
-    private Search.ActionListener mActionListener;
+    @ViewById(R.id.tabs)
+    TabLayout tabLayout;
 
-    private LinearLayoutManager mLayoutManager = new LinearLayoutManager(this);
-    private ScrollListener mScrollListener = new ScrollListener(mLayoutManager);
-    private SearchResultsAdapter mAdapter;
+    @FragmentById(R.id.fragment_navigation_drawer)
+    FragmentDrawer drawerFragment;
 
-    private class ScrollListener extends ResultListScrollListener {
-
-        public ScrollListener(LinearLayoutManager layoutManager) {
-            super(layoutManager);
-        }
-
-        @Override
-        public void onLoadMore() {
-            mActionListener.loadMoreResults();
-        }
-    }
+    @FragmentByTag("Tracks")
+    SettingFragment settingFragment;
 
     @AfterViews
-    void Search(){
-        Intent intent = getIntent();
-        String token = intent.getStringExtra(EXTRA_TOKEN);
+    void viewLayout(){
+        setSupportActionBar(mToolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        mActionListener = new SearchPresenter(this, this);
-        mActionListener.init(token);
+        setupViewPager(viewPager);
+        tabLayout.setupWithViewPager(viewPager);
 
-        // Setup search field
+        drawerFragment.setUp(R.id.fragment_navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout), mToolbar);
+        drawerFragment.setDrawerListener(this);
+
+    }
+
+    private void setupViewPager(ViewPager viewPager) {
+        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
+        adapter.addFragment(new TrackFragment_(), "Tracks");
+        adapter.addFragment(new SettingFragment(), "Playlists");
+        adapter.addFragment(new SettingFragment(), "Groups");
+        viewPager.setAdapter(adapter);
+    }
+
+    public static Intent createIntent(Context context) {
+        return new Intent(context, MainActivity_.class);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        //Add action view (SearchView) to ActionBar
+        MenuItem searchItem = menu.findItem(R.id.action_search);
+        SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                mActionListener.search(query);
-                searchView.clearFocus();
-                return true;
+                Toast.makeText(getApplicationContext(), "Searching" + query, Toast.LENGTH_SHORT).show();
+                return false;
             }
 
             @Override
@@ -75,71 +97,87 @@ public class MainActivity extends AppCompatActivity implements Search.View {
             }
         });
 
-        // Setup search results list
-        mAdapter = new SearchResultsAdapter(this, new SearchResultsAdapter.ItemSelectedListener() {
-            @Override
-            public void onItemSelected(View itemView, Track item) {
-                mActionListener.selectTrack(item);
-            }
-        });
-
-        resultsList.setHasFixedSize(true);
-        resultsList.setLayoutManager(mLayoutManager);
-        resultsList.setAdapter(mAdapter);
-        resultsList.addOnScrollListener(mScrollListener);
-
-    }
-
-    public static Intent createIntent(Context context) {
-        return new Intent(context, MainActivity_.class);
+        return true;
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
 
-        // If Activity was recreated wit active search restore it
-        if (savedInstanceState != null) {
-            String currentQuery = savedInstanceState.getString(KEY_CURRENT_QUERY);
-            mActionListener.search(currentQuery);
+        if (id == R.id.action_search) {
+            Toast.makeText(getApplicationContext(), "Search action is selected!", Toast.LENGTH_SHORT).show();
+            return true;
         }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
-    public void reset() {
-        mScrollListener.reset();
-        mAdapter.clearData();
+    public void onDrawerItemSelected(View view, int position) {
+        displayView(position);
     }
 
-    @Override
-    public void addData(List<Track> items) {
-        mAdapter.addData(items);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        mActionListener.pause();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        mActionListener.resume();
-    }
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        if (mActionListener.getCurrentQuery() != null) {
-            outState.putString(KEY_CURRENT_QUERY, mActionListener.getCurrentQuery());
+    private void displayView(int position){
+        Fragment fragment = null;
+        String title = getString(R.string.app_name);
+        switch (position){
+            case 0:
+                title = getString(R.string.nav_item_search);
+                break;
+            case 1:
+                title = getString(R.string.nav_item_favorite);
+                break;
+            case 2:
+                title = getString(R.string.nav_item_download);
+                break;
+            case 3:
+                fragment = new SettingFragment();
+                title = getString(R.string.nav_item_setting);
+                break;
+            case 4:
+                title = getString(R.string.nav_item_exit);
+                break;
+            default:
+                break;
         }
+        if (fragment != null) {
+            FragmentManager fragmentManager = getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.container_body, fragment);
+            fragmentTransaction.commit();
+            // set the toolbar title
+            getSupportActionBar().setTitle(title);
+        }
+
+        Toast.makeText(getApplicationContext(), "Goto Fragment: " + title, Toast.LENGTH_SHORT).show();
     }
 
-    @Override
-    protected void onDestroy() {
-        mActionListener.destroy();
-        super.onDestroy();
+    private class ViewPagerAdapter extends FragmentPagerAdapter {
+        private final List<Fragment> mFragmentList = new ArrayList<>();
+        private final List<String> mFragmentTitleList = new ArrayList<>();
+
+        public ViewPagerAdapter(FragmentManager manager) {
+            super(manager);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return mFragmentList.get(position);
+        }
+
+        @Override
+        public int getCount() {
+            return mFragmentList.size();
+        }
+
+        public void addFragment(Fragment fragment, String title) {
+            mFragmentList.add(fragment);
+            mFragmentTitleList.add(title);
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return mFragmentTitleList.get(position);
+        }
     }
 
 }

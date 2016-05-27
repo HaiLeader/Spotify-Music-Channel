@@ -1,7 +1,29 @@
 <resources>
-    <string name="app_name">Spotify Music Channel</string>
+    <string name="app_name">Spotify Music</string>
     <string name="login_button">Login to Spotify</string>
+    <string name="action_settings">Search Toolbar</string>
     <string name="search">Search</string>
     <string name="cover_art_description">Cover art</string>
-    <string name="search_hint">Search tracks</string>
+    <string name="search_hint">Search</string>
+
+    <!-- navigation drawer item labels  -->
+    <string name="nav_item_search">Search</string>
+    <string name="nav_item_favorite">Favorite</string>
+    <string name="nav_item_download">Download</string>
+    <string name="nav_item_setting">Setting</string>
+    <string name="nav_item_exit">Exit</string>
+    <string name="action_search">Search</string>
+    <string name="drawer_open">Open</string>
+    <string name="drawer_close">Close</string>
+
+    <string-array name="nav_drawer_labels">
+        <item>@string/nav_item_search</item>
+        <item>@string/nav_item_favorite</item>
+        <item>@string/nav_item_download</item>
+        <item>@string/nav_item_setting</item>
+        <item>@string/nav_item_exit</item>
+    </string-array>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

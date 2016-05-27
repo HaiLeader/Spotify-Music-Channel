@@ -34,7 +34,7 @@ public class LoginActivity extends Activity {
     }
 
     @Click(R.id.loginButton)
-    public void onClick(){
+    void onClick(){
         final AuthenticationRequest request = new AuthenticationRequest.Builder(ConfigSpotify.CLIENT_ID, AuthenticationResponse.Type.TOKEN, ConfigSpotify.REDIRECT_URI)
                 .setScopes(new String[]{"playlist-read"})
                 .build();
